@@ -1,0 +1,7 @@
+# *.turbopages.org
+User-agent: Twitterbot
+Disallow:
+
+User-agent: *
+Disallow: /turbo*?*parent-reqid*
+Disallow: /turbo*?*ajax=1*
