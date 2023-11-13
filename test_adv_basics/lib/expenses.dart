@@ -1,95 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:test_adv_basics/expense.dart';
+import 'package:test_adv_basics/add_item.dart';
+import 'package:test_adv_basics/cards.dart';
+import 'package:test_adv_basics/lists.dart';
 
-class Expenses extends StatefulWidget {
-  const Expenses({super.key});
+class Body extends StatefulWidget {
+  const Body({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _ExpensesState();
+    return _BodyState();
   }
 }
 
-class _ExpensesState extends State<Expenses> {
-  List<ExpensesC> exp = [
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    ExpensesC(expenselist: ExpenseList.basketball, title: 'Football'),
-    // Добавьте другие элементы в список exp по мере необходимости
+class _BodyState extends State<Body> {
+  final List<Expense> _registeredExpenses = [
+    Expense(id: 'Id', title: 'Title')
   ];
+
+  void _openAddExpenseOverlay() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Additem(onAddExpense: _addExpense),
+    );
+  }
+
+  void _addExpense(Expense expense) {
+    setState(() {
+      _registeredExpenses.add(expense);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final cardHeight = screenHeight * 0.15;
-
-    return ListView.separated(
-      itemCount: exp.length,
-      separatorBuilder: (BuildContext context, int index) {
-        return SizedBox(height: 10); // Отступ между карточками
-      },
-      itemBuilder: (BuildContext context, int index) {
-        if (index < exp.length) {
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'Top NEWS',
+          style: TextStyle(fontSize: 19),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.green,
+        actions: [
+          IconButton(onPressed: _openAddExpenseOverlay, icon: const Icon(Icons.add))
+        ],
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 30),
+          const Text(
+            'Top News Today',
+            style: TextStyle(fontSize: 30),
+          ),
+          const SizedBox(
+            height: 15,
+          ),
+          Expanded(
+            child: SizedBox(
+              child: Cardsitem(expenses: _registeredExpenses),
             ),
-            margin: const EdgeInsets.symmetric(horizontal: 25),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 7,
-                    horizontal: 5,
-                  ),
-                  child: ListTile(
-                    title: Column(
-                      children: [
-                        Center(
-                          child: Text(
-                            exp[index].title,
-                            style: TextStyle(fontSize: screenHeight * 0.025),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                    subtitle: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              '${exp[index].expenselist.name}',
-                              style: TextStyle(fontSize: screenHeight * 0.02),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Icon(Icons.sports_football, size: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          return const ListTile(
-            title: Text('Invalid Index'),
-          );
-        }
-      },
+          ),
+        ],
+      ),
     );
   }
 }
