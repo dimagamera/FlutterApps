@@ -1,6 +1,8 @@
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'cards.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -10,8 +12,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<String> emailList = [];
-  String? selectedEmail;
+  String _ip = '';
+  String _country = '';
+  String _region = '';
+  String _city = '';
+  String _timeZone = '';
+  String _currency = '';
+  String _as = '';
+  String success = 'success';
+  final _ipController = TextEditingController();
+  String newIP = '';
 
   @override
   void initState() {
@@ -20,70 +30,88 @@ class _MyAppState extends State<MyApp> {
   }
 
   void fetchData() async {
-    final response = await http.get(Uri.parse(
-        'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=10'));
+    newIP = _ipController.text;
+    final response = await http.get(Uri.parse('http://ip-api.com/json/$newIP'));
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-
-      setState(() {
-        emailList = List<String>.from(data);
-        emailList.insert(0, 'Выберите email');
-        selectedEmail = emailList[0]; // Установка начального значения
-      });
+      Map<String, dynamic> data = json.decode(response.body);
+      success = data['status'];
+      if (success == 'success') {
+        setState(() {
+           _ip = data['query'];
+           _country = data['country'];
+           _region = data['regionName'];
+           _city = data['city'];
+           _as = data['as'];
+           _timeZone = data['timezone'];
+          
+        });
+        print('Trues');
+      } else if (success == false) {
+        print('false');
+      }
     } else {
       print('Error');
     }
   }
 
   @override
-  Widget build(context) {
+  Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.dark(),
-      
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(useMaterial3: true),
       home: Scaffold(
-        appBar: AppBar(title: Text('Temp Main')),
-        body: Center(          
-          child: Column(
-            children: [
-              SizedBox(height: 50,),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+        appBar: AppBar(
+          title: const Text('NSLookUP'),
+          centerTitle: true,
+          actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.add))],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 450,
+                  child: CardExp(
+                  ip: _ip,
+                  country: _country,
+                  city: _city,
+                  region: _region,
+                  as: _as,
+                  timezone: _timeZone,
+
+                  ), // Передача ip и type в CardExp
+                ),
+                TextField(
+                  controller: _ipController,
+                  maxLength: 100,
+                  decoration:
+                      const InputDecoration(hintText: 'Введіть адресу'),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text('Ваша тимчасова пошта', style: TextStyle(fontSize: 20),),
-                    SizedBox(height: 13,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Expanded(
-                            child: DropdownButton<String>(
-                              value: selectedEmail,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedEmail = newValue;
-                                });
-                              },
-                              icon: const Icon(Icons.arrow_drop_down),
-                              items: emailList
-                                  .map(
-                                    (String email) => DropdownMenuItem<String>(
-                                      value: email,
-                                      child: Text(email),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
+                    ElevatedButton(
+                      onPressed: fetchData,
+                      child: const Text(
+                        'Пошук',
+                        style: TextStyle(
+                          color: Colors.white,
                         ),
-                        const Icon(Icons.email_outlined)
-                      ],
+                      ),
                     ),
+                    ElevatedButton(onPressed: (){
+                      _ipController.clear(); 
+                    }, child: Text('Скинути', style:  TextStyle(color: Colors.white),))
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
